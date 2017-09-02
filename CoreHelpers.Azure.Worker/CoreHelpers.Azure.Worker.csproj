@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Hosting\" />
+    <Folder Include="Builder\" />
+    <Folder Include="AppServices\" />
+    <Folder Include="Logging\" />
+    <Folder Include="Clients\" />
+    <Folder Include="Hosting\Internal\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.IO.FileSystem.Watcher" Version="4.3.0" />
+    <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="8.3.0" />
+  </ItemGroup>
+</Project>

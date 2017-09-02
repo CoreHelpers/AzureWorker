@@ -1,0 +1,29 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreHelpers.Azure.Worker", "CoreHelpers.Azure.Worker\CoreHelpers.Azure.Worker.csproj", "{6891C350-624C-4B64-93EC-BFF014480DC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreHelpers.Azure.Worker.Tests", "CoreHelpers.Azure.Worker.Tests\CoreHelpers.Azure.Worker.Tests.csproj", "{24605A3F-9670-4CC0-8109-4EEEB9C5E663}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreHelper.Azure.Worker.Sample", "CoreHelper.Azure.Worker.Sample\CoreHelper.Azure.Worker.Sample.csproj", "{925376D3-BAFD-4905-BB4D-9C644EFF799E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6891C350-624C-4B64-93EC-BFF014480DC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6891C350-624C-4B64-93EC-BFF014480DC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6891C350-624C-4B64-93EC-BFF014480DC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6891C350-624C-4B64-93EC-BFF014480DC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24605A3F-9670-4CC0-8109-4EEEB9C5E663}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24605A3F-9670-4CC0-8109-4EEEB9C5E663}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24605A3F-9670-4CC0-8109-4EEEB9C5E663}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24605A3F-9670-4CC0-8109-4EEEB9C5E663}.Release|Any CPU.Build.0 = Release|Any CPU
+		{925376D3-BAFD-4905-BB4D-9C644EFF799E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{925376D3-BAFD-4905-BB4D-9C644EFF799E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{925376D3-BAFD-4905-BB4D-9C644EFF799E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{925376D3-BAFD-4905-BB4D-9C644EFF799E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

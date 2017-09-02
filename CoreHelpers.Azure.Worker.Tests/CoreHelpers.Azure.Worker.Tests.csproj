@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreHelpers.Azure.Worker\CoreHelpers.Azure.Worker.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Hosting\" />
+  </ItemGroup>
+</Project>
