@@ -1,0 +1,27 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>CoreHelpers.Azure.Worker</id>
+    <version>0.0.2</version>
+    <authors>Dirk Eisenberg</authors>
+    <owners>Dirk Eisenberg</owners>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/CoreHelpers/AzureWorker</projectUrl>
+    <description>This project implements an efficient middleware based way to implement workers with a strong focus on Azure App Services.</description>
+    <tags>dotnet-core dotnet azure azure-storage azure-table-storage azure-app-service workers</tags>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="NETStandard.Library" version="2.0.0" exclude="Build,Analyzers" />
+        <dependency id="WindowsAzure.Storage" version="8.3.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="2.0.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging" version="2.0.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Console" version="2.0.0" exclude="Build,Analyzers" />
+        <dependency id="Serilog.Extensions.Logging" version="2.0.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+  	<file src="CoreHelpers.Azure.Worker\bin\Release\netstandard2.0\CoreHelpers*.dll" target="lib\netstandard2.0" />    
+  </files>
+</package>
