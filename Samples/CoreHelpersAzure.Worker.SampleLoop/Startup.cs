@@ -39,7 +39,7 @@ namespace CoreHelpersAzure.Worker.SampleLoop
 				var logger = loggerFactory.CreateLogger("Processor");
 
 				// lookup a scoped service 
-				var scopedService = app.ApplicationServices.GetService<IScopedService>();
+				var scopedService = operation.Services.GetService<IScopedService>();
 															
 				// log the message 				
 				logger.LogInformation("MW01 - InstanceId: {0}", scopedService.InstanceId);
@@ -54,7 +54,7 @@ namespace CoreHelpersAzure.Worker.SampleLoop
 				var logger = loggerFactory.CreateLogger("Processor");
 
 				// lookup a scoped service 
-				var scopedService = app.ApplicationServices.GetService<IScopedService>();
+				var scopedService = operation.Services.GetService<IScopedService>();
 															
 				// log the message 				
 				logger.LogInformation("MW02 - InstanceId: {0}", scopedService.InstanceId);

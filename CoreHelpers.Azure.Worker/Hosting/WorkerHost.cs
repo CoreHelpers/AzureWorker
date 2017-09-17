@@ -78,10 +78,11 @@ namespace CoreHelpers.Azure.Worker.Hosting
 				var stack = new Stack<Func<WorkerApplicationOperation, IWorkerApplicationMiddlewareExecutionController, Task>>(ApplicationBuilder.RegisteredMiddleWares.Reverse());
 
 				// generate the worker operation context
-				var operation = new WorkerApplicationOperation();
-
-				// this executes all the regular middlewares
-				await ExecuteNextMiddleWare(stack, operation);											
+				using (var operation = new WorkerApplicationOperation(ApplicationBuilder.ApplicationServices.CreateScope()))
+				{
+					// this executes all the regular middlewares
+					await ExecuteNextMiddleWare(stack, operation);
+				}													
 			} 
 			catch(Exception e) 
 			{
