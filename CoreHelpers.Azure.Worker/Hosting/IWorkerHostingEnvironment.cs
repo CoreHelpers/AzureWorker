@@ -7,6 +7,8 @@ namespace CoreHelpers.Azure.Worker.Hosting
     	
     	string ProcessRootPath { get; }
 
+        bool IsRunningInContainerEnvironment();
+
 		bool IsDevelopment();
 		
 		bool IsStaging();
