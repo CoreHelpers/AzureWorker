@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using CoreHelpers.Azure.Worker.Clients;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace CoreHelpers.Azure.Worker.Sample
 {
@@ -34,17 +36,21 @@ namespace CoreHelpers.Azure.Worker.Sample
 		{
 			// get the right section
 			var configSection = Configuration.GetSection("DemoAccount");
-			var queueConfig = new AzureQueueClientConfiguration(configSection.GetValue<string>("Queue"), configSection.GetValue<string>("Account"), configSection.GetValue<string>("Key"));
+            var queueConfig1 = new AzureQueueClientPriorityConfiguration(configSection.GetValue<string>("Queue"), 1, configSection.GetValue<string>("Account"), configSection.GetValue<string>("Key"));
+            var queueConfig2 = new AzureQueueClientPriorityConfiguration(configSection.GetValue<string>("Queue1"), 2, configSection.GetValue<string>("Account"), configSection.GetValue<string>("Key"));
 					
 			// Use our middle ware which checks the queue for a new task
-    		app.UseStorageQueueProcessor(loggerFactory, queueConfig, async (operation, message, next) => {
+            app.UseStorageQueueProcessor(loggerFactory, new List<AzureQueueClientPriorityConfiguration>() { queueConfig1, queueConfig2 }, async (operation, message, next) => {
 
 				// get a logger
 				var logger = loggerFactory.CreateLogger("Processor");
 
 				// log the message 
 				logger.LogInformation("Received Message: {0}", message);
-				
+
+                // delay
+                Thread.Sleep(5000);
+
 				// jump to the next middleware
 				await next.Invoke();				
     		});   

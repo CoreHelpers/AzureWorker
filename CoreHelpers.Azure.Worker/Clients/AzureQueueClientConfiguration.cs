@@ -23,6 +23,10 @@ namespace CoreHelpers.Azure.Worker.Clients
 			StorageAccountSecret = storageAccountModel.Credentials.ExportBase64EncodedKey();
 		}				
 
+        public AzureQueueClientConfiguration(IAzureQueueClientConfiguration src) 
+            : this(src.StorageQueueName, src.StorageAccountName, src.StorageAccountSecret)
+        {}
+
 		public string StorageQueueName { get; set; }
 
 		public string StorageAccountName { get; set; }
