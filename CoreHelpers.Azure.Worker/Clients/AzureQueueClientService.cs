@@ -16,7 +16,7 @@ namespace CoreHelpers.Azure.Worker.Clients
 			_configuration = configuration;
 		}
 		
-		public Task PostMessage<T>(T message) where T: class 
+        public Task PostMessage<T>(T message, AzureQueueClientRequestOptions requestOptions = null) where T: class 
 		{
 			// configure
 			var account = new CloudStorageAccount(new StorageCredentials(_configuration.StorageAccountName, _configuration.StorageAccountSecret), true);
@@ -25,8 +25,12 @@ namespace CoreHelpers.Azure.Worker.Clients
 			// initialize a queue reference 
 			var taskQueue = client.GetQueueReference(_configuration.StorageQueueName);
 
-			// enque message
-			return taskQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
+            // define the default values
+            if (requestOptions == null)
+                requestOptions = new AzureQueueClientRequestOptions();
+            
+            // enque message
+            return taskQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)), requestOptions.MessageTimeToLive, requestOptions.VisibilityTimeout, null, null);    
 		}
 	}
 }
