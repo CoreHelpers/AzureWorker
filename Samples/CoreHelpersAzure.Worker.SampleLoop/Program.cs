@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreHelpers.Azure.Worker.AppServices;
 using CoreHelpers.Azure.Worker.Hosting;
 using CoreHelpers.Azure.Worker.Logging;
 
@@ -11,7 +12,8 @@ namespace CoreHelpersAzure.Worker.SampleLoop
 			var host = new WorkerHostBuilder()				
 				.UseConsoleLogging()				
 				.UseStartup<Startup>()											
-				.UsePolling(2000)				
+				.UsePolling(2000)
+                .UseAzureAppServiceShutdownHandler()
 				.Build();			
 			
 			host.Run();	

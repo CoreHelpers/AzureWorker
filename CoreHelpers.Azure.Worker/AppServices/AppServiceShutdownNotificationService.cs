@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,12 +8,13 @@ using CoreHelpers.Azure.Worker.Hosting;
 namespace CoreHelpers.Azure.Worker.AppServices
 {
 	public class AppServiceShutdownNotificationService : IShutdownNotificationService
-	{
-		private Task fsWatcherTask { get; set; }
-		
+	{		
+        private List<Func<Task>> shutdownNotificationHandlers { get; set; } = new List<Func<Task>>();
+        private ManualResetEvent shutdownCompleted { get; set; } = new ManualResetEvent(false);
+
 		public AppServiceShutdownNotificationService() 
 		{ 
-		 	fsWatcherTask = Task.Run(() =>
+		 	Task.Run(async () =>
 			{
 			
 				// Get the shutdown file path from the environment
@@ -22,7 +24,20 @@ namespace CoreHelpers.Azure.Worker.AppServices
 				var fileSystemWatcher = new FileSystemWatcherEx(shutdownFile);
 								
 				// wait until the event is signaled
-				fileSystemWatcher.FileChangedEvent.WaitOne();
+                fileSystemWatcher.FileChangedEvent.WaitOne(Timeout.Infinite);
+
+                // use the revers order 
+                shutdownNotificationHandlers.Reverse();
+
+
+                // signal all registered notification handelrs
+                foreach(var action in shutdownNotificationHandlers)
+                {
+                    await action.Invoke();
+                };
+
+                // singnal shutdown
+                shutdownCompleted.Set();
 			});
 		}
 		
@@ -32,21 +47,16 @@ namespace CoreHelpers.Azure.Worker.AppServices
 			if (triggerFileName == null) { triggerFileName = "/tmp/stop.notify"; }
 			return triggerFileName;
 		}
-		
-		public bool WaitForShutdown(Task parentTask)
-		{									
-			// observer tasks 
-			var observerTask = new Task[] {
-				fsWatcherTask,
-				parentTask != null ? parentTask : Task.CompletedTask
-			};
+				
+        public void OnShutdownNotification(Func<Task> action)
+        {
+            shutdownNotificationHandlers.Add(action);
+        }
 
-			// wait for at least one 
-			var waitResult = Task.WaitAny(observerTask);
-
-			// check if it was the fs watcher
-			return (waitResult != 0);
-		}		
+        public void WaitForAllNotificationHandlers()
+        {
+            shutdownCompleted.WaitOne(Timeout.Infinite);
+        }
 	}
 	
 	internal class FileSystemWatcherEx : FileSystemWatcher 

@@ -12,7 +12,7 @@ namespace CoreHelpers.Azure.Worker.AppServices
 			var services = (hostBuilder as WorkerHostBuilder).Services;
 
 			// add the worker
-			(hostBuilder as WorkerHostBuilder).Services.AddSingleton(typeof(IShutdownNotificationService), typeof(AppServiceShutdownNotificationService));
+            (hostBuilder as WorkerHostBuilder).Services.AddSingleton<IShutdownNotificationService>(new AppServiceShutdownNotificationService());
 			
 			// done
 			return hostBuilder;
