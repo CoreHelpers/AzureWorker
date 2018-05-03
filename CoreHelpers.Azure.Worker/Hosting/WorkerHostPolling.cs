@@ -24,8 +24,10 @@ namespace CoreHelpers.Azure.Worker.Hosting
 			var shutdownService = ServiceCollection.BuildServiceProvider().GetService<IShutdownNotificationService>();
 
             // register a handler who interupts the next polling 
+            var bReceivedShutdownNotification = false;
             shutdownService.OnShutdownNotification(async () =>
-            {                
+            {
+                bReceivedShutdownNotification = true;
                 pollingService.AbortDuringNextPolling();
                 await Task.CompletedTask;
             });
@@ -39,7 +41,8 @@ namespace CoreHelpers.Azure.Worker.Hosting
 			} while (pollingService.Wait(Polling));
 
             // ensure all shutdown activities are executed gracefully 
-            shutdownService.WaitForAllNotificationHandlers();
+            if (bReceivedShutdownNotification)
+                shutdownService.WaitForAllNotificationHandlers();
 		}        	
     }
 }

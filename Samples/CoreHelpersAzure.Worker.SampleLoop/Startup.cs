@@ -32,7 +32,7 @@ namespace CoreHelpersAzure.Worker.SampleLoop
      		services.AddScoped<IScopedService, ScopedServiceImp>();
         }
         
-        public void Configure(IWorkerApplicationBuilder app, IWorkerHostingEnvironment env, ILoggerFactory loggerFactory, IShutdownNotificationService shutdownService) 
+        public void Configure(IWorkerApplicationBuilder app, IWorkerHostingEnvironment env, ILoggerFactory loggerFactory, IShutdownNotificationService shutdownService, IPollingService pollingService) 
 		{
             shutdownService.OnShutdownNotification(async () =>
             {
@@ -75,7 +75,18 @@ namespace CoreHelpersAzure.Worker.SampleLoop
 				logger.LogInformation("MW02 - InstanceId: {0}", scopedService.InstanceId);
 			
 				return next.Invoke();
-			});	
+			});
+
+            /*app.Use((WorkerApplicationOperation operation, IWorkerApplicationMiddlewareExecutionController next) =>
+            {
+                // get a logger
+                var logger = loggerFactory.CreateLogger("AbortNextPolling");
+
+                logger.LogInformation("Abort...");
+                pollingService.AbortDuringNextPolling();
+
+                return next.Invoke();
+            });*/
 		}		
 	}
 }
