@@ -9,13 +9,13 @@ namespace CoreHelpers.Azure.Worker.Hosting
 		private bool _skipNextPolling { get; set; }
         private bool _abortNextPolling { get; set; }
 		
-        private ManualResetEvent _pollingAbort { get; set; }
+        private AutoResetEvent _pollingAbort { get; set; }
 
 		public PollingService() 
 		{
             _skipNextPolling = false;
             _abortNextPolling = false;
-            _pollingAbort = new ManualResetEvent(false);
+            _pollingAbort = new AutoResetEvent(false);
 		}
 
 		public void SkipNextPolling()
