@@ -77,7 +77,7 @@ namespace CoreHelpersAzure.Worker.SampleLoop
 				return next.Invoke();
 			});
 
-            /*app.Use((WorkerApplicationOperation operation, IWorkerApplicationMiddlewareExecutionController next) =>
+			/*app.Use((WorkerApplicationOperation operation, IWorkerApplicationMiddlewareExecutionController next) =>
             {
                 // get a logger
                 var logger = loggerFactory.CreateLogger("AbortNextPolling");
@@ -87,6 +87,30 @@ namespace CoreHelpersAzure.Worker.SampleLoop
 
                 return next.Invoke();
             });*/
+
+			app.Use(async (WorkerApplicationOperation operation, IWorkerApplicationMiddlewareExecutionController next) =>
+            {
+
+                // get a logger
+                var logger = loggerFactory.CreateLogger("Processor");                
+                logger.LogInformation("Delaying Job");
+
+                // delay
+				await Task.Delay(5000);
+
+                // next
+                await next.Invoke();
+            });
+
+			app.UseOnTimeout(async (WorkerApplicationOperation operation) =>
+			{
+				Console.WriteLine("Timeout Exceeded");
+				await Task.CompletedTask;
+
+                // abort
+				Console.WriteLine("Aborting Worker");
+				pollingService.AbortDuringNextPolling();
+			});
 		}		
 	}
 }

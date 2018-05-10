@@ -15,7 +15,7 @@ namespace CoreHelpers.Azure.Worker.Hosting
 			Polling = polling;			
     	}
     	
-		public override async Task RunAsync() 
+		public override async Task RunAsync(TimeSpan executionTimeout) 
 		{
             // get the polling service 
             var pollingService = ServiceCollection.BuildServiceProvider().GetService<IPollingService>();            
@@ -36,7 +36,7 @@ namespace CoreHelpers.Azure.Worker.Hosting
 			do
 			{                
 				// do the basic work 
-				await base.RunAsync();
+				await base.RunAsync(executionTimeout);
 										
 			} while (pollingService.Wait(Polling));
 

@@ -17,7 +17,7 @@ namespace CoreHelpers.Azure.Worker.Sample
 				.UsePolling(500)				
 				.Build();			
 			
-			host.Run();	
+			host.Run(TimeSpan.Zero);	
 		}
 	}
 }

@@ -14,7 +14,7 @@ namespace CoreHelpers.Azure.Worker.Hosting
 		protected IWorkerApplicationBuilder ApplicationBuilder { get; set; }
 		protected ILoggerFactory LoggerFactory { get; set; }
 		
-    	public WorkerHost(IServiceCollection serviceCollection) 
+		public WorkerHost(IServiceCollection serviceCollection) 
     	{			
 			ServiceCollection = serviceCollection;
 			ApplicationBuilder = ServiceCollection.BuildServiceProvider().GetService<IWorkerApplicationBuilder>();
@@ -67,7 +67,7 @@ namespace CoreHelpers.Azure.Worker.Hosting
 			});			
 		}
 		
-        public virtual async Task RunAsync() 
+		public virtual async Task RunAsync(TimeSpan executionTimeout) 
         {        	
 			if (ApplicationBuilder.RegisteredMiddleWares.Count == 0)
 				return;
@@ -77,11 +77,32 @@ namespace CoreHelpers.Azure.Worker.Hosting
 				// generate the middleware stack
 				var stack = new Stack<Func<WorkerApplicationOperation, IWorkerApplicationMiddlewareExecutionController, Task>>(ApplicationBuilder.RegisteredMiddleWares.Reverse());
 
+				// build the timeout task                 
+				var timeoutTask = default(Task);
+				if (executionTimeout > TimeSpan.Zero)
+					timeoutTask = Task.Delay(executionTimeout);									
+
 				// generate the worker operation context
 				using (var operation = new WorkerApplicationOperation(ApplicationBuilder.ApplicationServices.CreateScope()))
-				{
+				{					
 					// this executes all the regular middlewares
-					await ExecuteNextMiddleWare(stack, operation);
+					var executionTask = ExecuteNextMiddleWare(stack, operation);
+
+					// build the wait queue
+					var tasksToWait = new List<Task>();
+					tasksToWait.Add(executionTask);
+
+					if (timeoutTask != null)
+						tasksToWait.Add(timeoutTask);
+
+					// wait for all 
+					var waitResult = Task.WaitAny(tasksToWait.ToArray());
+					if (tasksToWait[waitResult] == timeoutTask) 
+					{
+						foreach(var timeoutMiddleware in ApplicationBuilder.RegisteredTimeoutMiddleWares)              
+							await timeoutMiddleware(operation);               
+					}
+
 				}													
 			} 
 			catch(Exception e) 
@@ -94,15 +115,18 @@ namespace CoreHelpers.Azure.Worker.Hosting
 			}
         }
 
-		public void Run() 
+		public void Run(TimeSpan executionTimeout) 
 		{		
 			// execute the configuration task 
 			ConfigureAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 			
 			// Trigger the run cycle
-			RunAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+			RunAsync(executionTimeout).ConfigureAwait(false).GetAwaiter().GetResult();
 		}
 
-		
+		public Task RunAsync()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
