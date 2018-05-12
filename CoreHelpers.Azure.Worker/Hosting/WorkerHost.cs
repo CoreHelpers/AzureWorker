@@ -101,6 +101,10 @@ namespace CoreHelpers.Azure.Worker.Hosting
 					{
 						foreach(var timeoutMiddleware in ApplicationBuilder.RegisteredTimeoutMiddleWares)              
 							await timeoutMiddleware(operation);               
+					} else {
+						var taskFinished = tasksToWait[waitResult];
+						if (taskFinished.Exception != null)
+							throw taskFinished.Exception.InnerException;						    
 					}
 
 				}													
