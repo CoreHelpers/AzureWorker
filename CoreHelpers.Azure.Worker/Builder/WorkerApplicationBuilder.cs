@@ -8,7 +8,7 @@ namespace CoreHelpers.Azure.Worker.Builder
 	public class WorkerApplicationBuilder : IWorkerApplicationBuilder
 	{
 		public ICollection<Func<WorkerApplicationOperation, IWorkerApplicationMiddlewareExecutionController, Task>> RegisteredMiddleWares { get; set; }
-		public ICollection<Func<Exception, Task>> RegisteredErrorMiddleWares { get; set; }
+        public ICollection<Func<WorkerApplicationOperation, Exception, Task>> RegisteredErrorMiddleWares { get; set; }
 		public ICollection<Func<WorkerApplicationOperation, Task>> RegisteredFinalizedMiddleWares { get; set; }
 		public ICollection<Func<WorkerApplicationOperation, Task>> RegisteredTimeoutMiddleWares { get; set; }
 
@@ -18,7 +18,7 @@ namespace CoreHelpers.Azure.Worker.Builder
 		public WorkerApplicationBuilder(IServiceCollection services) 
 		{
 			RegisteredMiddleWares = new List<Func<WorkerApplicationOperation, IWorkerApplicationMiddlewareExecutionController, Task>>();
-			RegisteredErrorMiddleWares = new List<Func<Exception, Task>>();	
+            RegisteredErrorMiddleWares = new List<Func<WorkerApplicationOperation, Exception, Task>>();	
 			RegisteredFinalizedMiddleWares = new List<Func<WorkerApplicationOperation, Task>>();
 			RegisteredTimeoutMiddleWares = new List<Func<WorkerApplicationOperation, Task>>();
 			Services = services;
@@ -30,7 +30,7 @@ namespace CoreHelpers.Azure.Worker.Builder
 			return this;
 		}
 
-		public IWorkerApplicationBuilder UseOnError(Func<Exception, Task> middleware)
+        public IWorkerApplicationBuilder UseOnError(Func<WorkerApplicationOperation, Exception, Task> middleware)
 		{
 			RegisteredErrorMiddleWares.Add(middleware);
 			return this;

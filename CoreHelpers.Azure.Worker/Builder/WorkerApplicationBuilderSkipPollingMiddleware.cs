@@ -29,7 +29,7 @@ namespace CoreHelpers.Azure.Worker.Builder
                 await context.Invoke();
 			});							
 			
-			app.UseOnError(async (Exception error) => {
+            app.UseOnError(async (WorkerApplicationOperation operation, Exception error) => {
 				// log
 				logger.LogInformation("Skipping next polling...");
 

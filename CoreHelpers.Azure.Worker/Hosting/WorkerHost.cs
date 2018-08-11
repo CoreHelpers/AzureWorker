@@ -84,28 +84,40 @@ namespace CoreHelpers.Azure.Worker.Hosting
 
 				// generate the worker operation context
 				using (var operation = new WorkerApplicationOperation(ApplicationBuilder.ApplicationServices.CreateScope()))
-				{					
-					// this executes all the regular middlewares
-					var executionTask = ExecuteNextMiddleWare(stack, operation);
+				{
+                    try
+                    {
+                        // this executes all the regular middlewares
+                        var executionTask = ExecuteNextMiddleWare(stack, operation);
 
-					// build the wait queue
-					var tasksToWait = new List<Task>();
-					tasksToWait.Add(executionTask);
+                        // build the wait queue
+                        var tasksToWait = new List<Task>();
+                        tasksToWait.Add(executionTask);
 
-					if (timeoutTask != null)
-						tasksToWait.Add(timeoutTask);
+                        if (timeoutTask != null)
+                            tasksToWait.Add(timeoutTask);
 
-					// wait for all 
-					var waitResult = Task.WaitAny(tasksToWait.ToArray());
-					if (tasksToWait[waitResult] == timeoutTask) 
-					{
-						foreach(var timeoutMiddleware in ApplicationBuilder.RegisteredTimeoutMiddleWares)              
-							await timeoutMiddleware(operation);               
-					} else {
-						var taskFinished = tasksToWait[waitResult];
-						if (taskFinished.Exception != null)
-							throw taskFinished.Exception.InnerException;						    
-					}
+                        // wait for all 
+                        var waitResult = Task.WaitAny(tasksToWait.ToArray());
+                        if (tasksToWait[waitResult] == timeoutTask)
+                        {
+                            foreach (var timeoutMiddleware in ApplicationBuilder.RegisteredTimeoutMiddleWares)
+                                await timeoutMiddleware(operation);
+                        }
+                        else
+                        {
+                            var taskFinished = tasksToWait[waitResult];
+                            if (taskFinished.Exception != null)
+                                throw taskFinished.Exception.InnerException;
+                        }
+                    } catch(Exception e) {
+                        
+                        var logger = LoggerFactory.CreateLogger("WorkerHost");  
+                        logger.LogError(new EventId(0), e, "Unhandled exception during middleware execution (with operation)");
+
+                        foreach(var errorMiddleware in ApplicationBuilder.RegisteredErrorMiddleWares)               
+                            await errorMiddleware(operation, e);             
+                    }
 
 				}													
 			} 
@@ -115,7 +127,7 @@ namespace CoreHelpers.Azure.Worker.Hosting
 				logger.LogError(new EventId(0), e, "Unhandled exception during middleware execution");
 
 				foreach(var errorMiddleware in ApplicationBuilder.RegisteredErrorMiddleWares) 				
-					await errorMiddleware(e);				
+                    await errorMiddleware(null, e);				
 			}
         }
 

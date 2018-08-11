@@ -12,7 +12,7 @@ namespace CoreHelpers.Azure.Worker.Builder
     	
     	ICollection<Func<WorkerApplicationOperation, Task>> RegisteredFinalizedMiddleWares { get; set; }
     	
-    	ICollection<Func<Exception, Task>> RegisteredErrorMiddleWares { get; } 
+        ICollection<Func<WorkerApplicationOperation, Exception, Task>> RegisteredErrorMiddleWares { get; } 
 
 		ICollection<Func<WorkerApplicationOperation, Task>> RegisteredTimeoutMiddleWares { get; } 
     	
@@ -20,7 +20,7 @@ namespace CoreHelpers.Azure.Worker.Builder
 
 		IWorkerApplicationBuilder UseOnFinalize(Func<WorkerApplicationOperation, Task> middleware);
 		
-		IWorkerApplicationBuilder UseOnError(Func<Exception, Task> middleware);
+        IWorkerApplicationBuilder UseOnError(Func<WorkerApplicationOperation, Exception, Task> middleware);
 
 		IWorkerApplicationBuilder UseOnTimeout(Func<WorkerApplicationOperation, Task> middleware);
     }
