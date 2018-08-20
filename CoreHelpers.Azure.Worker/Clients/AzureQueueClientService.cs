@@ -19,7 +19,7 @@ namespace CoreHelpers.Azure.Worker.Clients
         public Task PostMessage<T>(T message, AzureQueueClientRequestOptions requestOptions = null) where T: class 
 		{
 			// configure
-			var account = new CloudStorageAccount(new StorageCredentials(_configuration.StorageAccountName, _configuration.StorageAccountSecret), true);
+            var account = new CloudStorageAccount(new StorageCredentials(_configuration.StorageAccountName, _configuration.StorageAccountSecret), _configuration.StorageAccountEndpointSuffix, true);
 			var client = account.CreateCloudQueueClient();
 			
 			// initialize a queue reference 

@@ -19,7 +19,7 @@ namespace CoreHelpers.Azure.Worker.AppServices
 			
 			// create a storage account 
 			var storageCredentials = new StorageCredentials(configuration.StorageAccountName, configuration.StorageAccountSecret);
-			var azureStorageAccount = new CloudStorageAccount(storageCredentials, true);
+            var azureStorageAccount = new CloudStorageAccount(storageCredentials, configuration.StorageAccountEndpointSuffix, true);
 
 			// create the queue if not exists
 			logger.LogInformation("Creating storage queue {0} in {1} if missing", configuration.StorageQueueName, configuration.StorageAccountName);

@@ -6,5 +6,6 @@ namespace CoreHelpers.Azure.Worker.Clients
 		string StorageQueueName { get; }
 		string StorageAccountName { get; }
 		string StorageAccountSecret { get; }
+        string StorageAccountEndpointSuffix { get; }
 	}
 }
