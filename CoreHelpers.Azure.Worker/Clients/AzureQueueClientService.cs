@@ -37,5 +37,26 @@ namespace CoreHelpers.Azure.Worker.Clients
             // enque message
             return taskQueue.AddMessageAsync(new CloudQueueMessage(messageText), requestOptions.MessageTimeToLive, requestOptions.VisibilityTimeout, null, null);
         }
+
+        public async Task<T> PopMessage<T>() where T : class
+        {
+            // configure
+            var account = new CloudStorageAccount(new StorageCredentials(_configuration.StorageAccountName, _configuration.StorageAccountSecret), _configuration.StorageAccountEndpointSuffix, true);
+            var client = account.CreateCloudQueueClient();
+
+            // initialize a queue reference 
+            var taskQueue = client.GetQueueReference(_configuration.StorageQueueName);
+
+            // retrieve the message
+            CloudQueueMessage retrievedMessage = await taskQueue.GetMessageAsync();
+            if (retrievedMessage == null)
+                return null;
+
+            // delete the received message 
+            await taskQueue.DeleteMessageAsync(retrievedMessage);
+
+            // return message
+            return JsonConvert.DeserializeObject<T>(retrievedMessage.AsString);
+        }
     }
 }
