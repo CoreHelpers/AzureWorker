@@ -21,7 +21,7 @@ namespace CoreHelpers.Azure.Worker.Clients
             await this.PostMessage(JsonConvert.SerializeObject(message), requestOptions);
 		}
 
-        public Task PostMessage(string messageText, AzureQueueClientRequestOptions requestOptions = null)
+        public async Task PostMessage(string messageText, AzureQueueClientRequestOptions requestOptions = null)
         {
             // configure
             var account = new CloudStorageAccount(new StorageCredentials(_configuration.StorageAccountName, _configuration.StorageAccountSecret), _configuration.StorageAccountEndpointSuffix, true);
@@ -35,28 +35,51 @@ namespace CoreHelpers.Azure.Worker.Clients
                 requestOptions = new AzureQueueClientRequestOptions();
 
             // enque message
-            return taskQueue.AddMessageAsync(new CloudQueueMessage(messageText), requestOptions.MessageTimeToLive, requestOptions.VisibilityTimeout, null, null);
+            try
+            {
+                await taskQueue.AddMessageAsync(new CloudQueueMessage(messageText), requestOptions.MessageTimeToLive, requestOptions.VisibilityTimeout, null, null);
+            } catch(StorageException e)
+            {
+                // check if we have something else as not exists
+                if (!e.Message.Contains("The specified queue does not exist"))
+                    throw e;
+
+                // create the queue
+                await taskQueue.CreateAsync();
+
+                // try it again
+                await PostMessage(messageText, requestOptions);
+            }
         }
 
         public async Task<T> PopMessage<T>() where T : class
         {
-            // configure
-            var account = new CloudStorageAccount(new StorageCredentials(_configuration.StorageAccountName, _configuration.StorageAccountSecret), _configuration.StorageAccountEndpointSuffix, true);
-            var client = account.CreateCloudQueueClient();
+            try
+            {
+                // configure
+                var account = new CloudStorageAccount(new StorageCredentials(_configuration.StorageAccountName, _configuration.StorageAccountSecret), _configuration.StorageAccountEndpointSuffix, true);
+                var client = account.CreateCloudQueueClient();
 
-            // initialize a queue reference 
-            var taskQueue = client.GetQueueReference(_configuration.StorageQueueName);
+                // initialize a queue reference 
+                var taskQueue = client.GetQueueReference(_configuration.StorageQueueName);
 
-            // retrieve the message
-            CloudQueueMessage retrievedMessage = await taskQueue.GetMessageAsync();
-            if (retrievedMessage == null)
-                return null;
+                // retrieve the message
+                CloudQueueMessage retrievedMessage = await taskQueue.GetMessageAsync();
+                if (retrievedMessage == null)
+                    return null;
 
-            // delete the received message 
-            await taskQueue.DeleteMessageAsync(retrievedMessage);
+                // delete the received message 
+                await taskQueue.DeleteMessageAsync(retrievedMessage);
 
-            // return message
-            return JsonConvert.DeserializeObject<T>(retrievedMessage.AsString);
+                // return message
+                return JsonConvert.DeserializeObject<T>(retrievedMessage.AsString);
+            } catch (StorageException e)
+            {
+                if (e.Message.Contains("The specified queue does not exist"))
+                    return null;
+
+                throw e;
+            }                           
         }
     }
 }
