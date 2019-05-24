@@ -7,8 +7,8 @@ namespace CoreHelpers.Azure.Worker.Hosting
     {
 		Task ConfigureAsync();
 		
-		Task RunAsync();		
+		Task RunAsync(TimeSpan executionTimeout);		
 		
-		void Run();
+		void Run(TimeSpan executionTimeout);
     }
 }

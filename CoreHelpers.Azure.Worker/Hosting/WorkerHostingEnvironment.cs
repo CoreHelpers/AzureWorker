@@ -38,7 +38,7 @@ namespace CoreHelpers.Azure.Worker.Hosting
             var cGroupContent = File.ReadAllText("/proc/1/cgroup");
 
             // set the cache value
-            cachedCheckIsRunningInContainerEnvironment = cGroupContent.Contains("/docker/");
+            cachedCheckIsRunningInContainerEnvironment = cGroupContent.Contains("/docker/") || cGroupContent.Contains("/kubepods/");
 
             // return the value 
             return cachedCheckIsRunningInContainerEnvironment.Value;

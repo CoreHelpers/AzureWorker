@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using CoreHelper.Azure.Worker.SampleLoop.Services;
 using CoreHelper.Azure.Worker.SampleLoop.Services.Contracts;
 using CoreHelpers.Azure.Worker.Builder;
@@ -31,8 +32,22 @@ namespace CoreHelpersAzure.Worker.SampleLoop
      		services.AddScoped<IScopedService, ScopedServiceImp>();
         }
         
-		public void Configure(IWorkerApplicationBuilder app, IWorkerHostingEnvironment env, ILoggerFactory loggerFactory) 
+        public void Configure(IWorkerApplicationBuilder app, IWorkerHostingEnvironment env, ILoggerFactory loggerFactory, IShutdownNotificationService shutdownService, IPollingService pollingService) 
 		{
+            shutdownService.OnShutdownNotification(async () =>
+            {
+
+                // get a logger
+                var logger = loggerFactory.CreateLogger("ShutdownHandler");
+
+                // delay 
+                logger.LogInformation("Delaying shutdown by 10 seconds");
+                await Task.Delay(5000);
+
+                // done
+                logger.LogInformation("Finished delay");
+            });
+
 			app.Use((WorkerApplicationOperation operation, IWorkerApplicationMiddlewareExecutionController next) =>
 			{
 				// get a logger
@@ -60,7 +75,42 @@ namespace CoreHelpersAzure.Worker.SampleLoop
 				logger.LogInformation("MW02 - InstanceId: {0}", scopedService.InstanceId);
 			
 				return next.Invoke();
-			});	
+			});
+
+			/*app.Use((WorkerApplicationOperation operation, IWorkerApplicationMiddlewareExecutionController next) =>
+            {
+                // get a logger
+                var logger = loggerFactory.CreateLogger("AbortNextPolling");
+
+                logger.LogInformation("Abort...");
+                pollingService.AbortDuringNextPolling();
+
+                return next.Invoke();
+            });*/
+
+			app.Use(async (WorkerApplicationOperation operation, IWorkerApplicationMiddlewareExecutionController next) =>
+            {
+
+                // get a logger
+                var logger = loggerFactory.CreateLogger("Processor");                
+                logger.LogInformation("Delaying Job");
+
+                // delay
+				await Task.Delay(5000);
+
+                // next
+                await next.Invoke();
+            });
+
+			app.UseOnTimeout(async (WorkerApplicationOperation operation) =>
+			{
+				Console.WriteLine("Timeout Exceeded");
+				await Task.CompletedTask;
+
+                // abort
+				Console.WriteLine("Aborting Worker");
+				pollingService.AbortDuringNextPolling();
+			});
 		}		
 	}
 }

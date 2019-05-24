@@ -32,5 +32,7 @@ namespace CoreHelpers.Azure.Worker.Clients
 		public string StorageAccountName { get; set; }
 
 		public string StorageAccountSecret { get; set; }
-	}
+
+        public string StorageAccountEndpointSuffix { get; set; }
+    }
 }

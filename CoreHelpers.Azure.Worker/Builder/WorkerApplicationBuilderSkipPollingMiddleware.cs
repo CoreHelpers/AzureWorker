@@ -25,11 +25,11 @@ namespace CoreHelpers.Azure.Worker.Builder
 				// done
 				pollingService.SkipNextPolling();
 
-				// done
-				await Task.CompletedTask;				
+                // done
+                await context.Invoke();
 			});							
 			
-			app.UseOnError(async (Exception error) => {
+            app.UseOnError(async (WorkerApplicationOperation operation, Exception error) => {
 				// log
 				logger.LogInformation("Skipping next polling...");
 

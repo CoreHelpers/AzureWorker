@@ -15,21 +15,34 @@ namespace CoreHelpers.Azure.Worker.Hosting
 			Polling = polling;			
     	}
     	
-		public override async Task RunAsync() 
+		public override async Task RunAsync(TimeSpan executionTimeout) 
 		{
+            // get the polling service 
+            var pollingService = ServiceCollection.BuildServiceProvider().GetService<IPollingService>();            
+
 			// get the shutdown handler 
 			var shutdownService = ServiceCollection.BuildServiceProvider().GetService<IShutdownNotificationService>();
 
-			// get the polling service 
-			var pollingService = ServiceCollection.BuildServiceProvider().GetService<IPollingService>();			
+            // register a handler who interupts the next polling 
+            var bReceivedShutdownNotification = false;
+            shutdownService.OnShutdownNotification(async () =>
+            {
+                bReceivedShutdownNotification = true;
+                pollingService.AbortDuringNextPolling();
+                await Task.CompletedTask;
+            });
 			
 			// run our infinite loop with polling
 			do
-			{
+			{                
 				// do the basic work 
-				await base.RunAsync();				
+				await base.RunAsync(executionTimeout);
 										
-			} while (shutdownService.WaitForShutdown(pollingService.Wait(Polling)));		
+			} while (pollingService.Wait(Polling));
+
+            // ensure all shutdown activities are executed gracefully 
+            if (bReceivedShutdownNotification)
+                shutdownService.WaitForAllNotificationHandlers();
 		}        	
     }
 }

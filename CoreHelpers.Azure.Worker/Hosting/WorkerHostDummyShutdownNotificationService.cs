@@ -5,10 +5,10 @@ namespace CoreHelpers.Azure.Worker.Hosting
 {
 	public class WorkerHostDummyShutdownNotificationService : IShutdownNotificationService
 	{
-		public bool WaitForShutdown(Task parentTask)
-		{
-			parentTask.Wait();
-			return true;
-		}
+		public void OnShutdownNotification(Func<Task> action)
+        {}
+
+        public void WaitForAllNotificationHandlers()
+        {}
 	}
 }
