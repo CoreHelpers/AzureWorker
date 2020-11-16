@@ -13,28 +13,31 @@ namespace CoreHelpers.Azure.Worker.Hosting
 		protected IServiceCollection ServiceCollection { get; set; }
 		protected IWorkerApplicationBuilder ApplicationBuilder { get; set; }
 		protected ILoggerFactory LoggerFactory { get; set; }
-		
+		protected ITimeoutService timeoutService { get; set; }
+
 		public WorkerHost(IServiceCollection serviceCollection) 
     	{			
 			ServiceCollection = serviceCollection;
 			ApplicationBuilder = ServiceCollection.BuildServiceProvider().GetService<IWorkerApplicationBuilder>();
 			LoggerFactory = ServiceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
 			if (LoggerFactory == null)
-				LoggerFactory = new LoggerFactory(); 
-			
-    	}
+				LoggerFactory = new LoggerFactory();			
+		}
     	
     	public virtual Task ConfigureAsync()
 		{	
 			// build an instance of the startup type         	         	
     		var startupService = ServiceCollection.BuildServiceProvider().GetService<IStartup>();
-					
+			
 			// execute the configure service 
 			var serviceProvider = startupService.ConfigureServices(ServiceCollection);
-						
+
+			// inject the timeout service
+			timeoutService = serviceProvider.GetService<ITimeoutService>();
+
 			// execute the configure method						
 			startupService.Configure(ApplicationBuilder);
-
+			
 			// inject our finalize middle ware
 			ApplicationBuilder.Use(async (operationFinalize, nextFinalize) =>
 			{
@@ -76,12 +79,7 @@ namespace CoreHelpers.Azure.Worker.Hosting
 			{
 				// generate the middleware stack
 				var stack = new Stack<Func<WorkerApplicationOperation, IWorkerApplicationMiddlewareExecutionController, Task>>(ApplicationBuilder.RegisteredMiddleWares.Reverse());
-
-				// build the timeout task                 
-				var timeoutTask = default(Task);
-				if (executionTimeout > TimeSpan.Zero)
-					timeoutTask = Task.Delay(executionTimeout);									
-
+								
 				// generate the worker operation context
 				using (var operation = new WorkerApplicationOperation(ApplicationBuilder.ApplicationServices.CreateScope()))
 				{
@@ -90,25 +88,19 @@ namespace CoreHelpers.Azure.Worker.Hosting
                         // this executes all the regular middlewares
                         var executionTask = ExecuteNextMiddleWare(stack, operation);
 
-                        // build the wait queue
-                        var tasksToWait = new List<Task>();
-                        tasksToWait.Add(executionTask);
+						// wait for the execution task 
+                        var waitResult = await timeoutService.WaitForExecution(executionTask, executionTimeout);
 
-                        if (timeoutTask != null)
-                            tasksToWait.Add(timeoutTask);
-
-                        // wait for all 
-                        var waitResult = Task.WaitAny(tasksToWait.ToArray());
-                        if (tasksToWait[waitResult] == timeoutTask)
+						// handle result
+						if (waitResult == TimoutServiceWaitResult.taskTimedout)
                         {
                             foreach (var timeoutMiddleware in ApplicationBuilder.RegisteredTimeoutMiddleWares)
                                 await timeoutMiddleware(operation);
                         }
                         else
-                        {
-                            var taskFinished = tasksToWait[waitResult];
-                            if (taskFinished.Exception != null)
-                                throw taskFinished.Exception.InnerException;
+                        {                            
+                            if (executionTask.Exception != null)
+                                throw executionTask.Exception.InnerException;
                         }
                     } catch(Exception e) {
                         

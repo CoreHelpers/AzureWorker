@@ -16,8 +16,8 @@ namespace CoreHelpersAzure.Worker.SampleLoop
                 .UseAzureAppServiceShutdownHandler()
 				.Build();			
 			
-			// host.Run(TimeSpan.FromSeconds(3));	
-			host.Run(TimeSpan.Zero);  
+			host.Run(TimeSpan.FromSeconds(10));	
+			// host.Run(TimeSpan.Zero);  
 		}
 	}
 }

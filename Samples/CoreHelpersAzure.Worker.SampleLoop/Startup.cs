@@ -32,7 +32,7 @@ namespace CoreHelpersAzure.Worker.SampleLoop
      		services.AddScoped<IScopedService, ScopedServiceImp>();
         }
         
-        public void Configure(IWorkerApplicationBuilder app, IWorkerHostingEnvironment env, ILoggerFactory loggerFactory, IShutdownNotificationService shutdownService, IPollingService pollingService) 
+        public void Configure(IWorkerApplicationBuilder app, IWorkerHostingEnvironment env, ILoggerFactory loggerFactory, IShutdownNotificationService shutdownService, IPollingService pollingService, ITimeoutService timeoutService) 
 		{
             shutdownService.OnShutdownNotification(async () =>
             {
@@ -87,7 +87,7 @@ namespace CoreHelpersAzure.Worker.SampleLoop
 
                 return next.Invoke();
             });*/
-
+			
 			app.Use(async (WorkerApplicationOperation operation, IWorkerApplicationMiddlewareExecutionController next) =>
             {
 
@@ -95,11 +95,41 @@ namespace CoreHelpersAzure.Worker.SampleLoop
                 var logger = loggerFactory.CreateLogger("Processor");                
                 logger.LogInformation("Delaying Job");
 
-                // delay
+				// delay
+				logger.LogInformation($"Delay 5sec - {DateTime.Now}");
 				await Task.Delay(5000);
 
-                // next
-                await next.Invoke();
+				// reset the timeout
+				await timeoutService.ResetExecutionTimeout();
+
+				// delay
+				logger.LogInformation($"Delay 5sec - {DateTime.Now}");
+				await Task.Delay(5000);
+
+				// reset the timeout
+				await timeoutService.ResetExecutionTimeout();
+
+				// delay
+				logger.LogInformation($"Delay 5sec - {DateTime.Now}");
+				await Task.Delay(5000);
+
+				// reset the timeout
+				await timeoutService.ResetExecutionTimeout();
+
+				// delay
+				logger.LogInformation($"Delay 5sec - {DateTime.Now}");
+				await Task.Delay(5000);
+
+				// delay
+				logger.LogInformation($"Delay 5sec - {DateTime.Now}");
+				await Task.Delay(5000);
+
+				// delay
+				logger.LogInformation($"Delay 5sec - {DateTime.Now}");
+				await Task.Delay(5000);
+
+				// next 
+				await next.Invoke();
             });
 
 			app.UseOnTimeout(async (WorkerApplicationOperation operation) =>

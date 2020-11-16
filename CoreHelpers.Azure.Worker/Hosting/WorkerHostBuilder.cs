@@ -15,9 +15,9 @@ namespace CoreHelpers.Azure.Worker.Hosting
     		Services.AddSingleton<IWorkerHostingEnvironment>(new WorkerHostingEnvironment());
     		Services.AddSingleton<IWorkerApplicationBuilder>(new WorkerApplicationBuilder(Services));
     		Services.AddSingleton<ILoggerFactory>(new LoggerFactory());
-    		Services.AddTransient<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();    		
-    	}
-    	
+    		Services.AddTransient<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();                        
+        }
+
         public IWorkerHost Build() 
         {
 			// Lookup the startup type
@@ -25,16 +25,21 @@ namespace CoreHelpers.Azure.Worker.Hosting
     		var startupService = serviceProvider.GetService<IStartup>();
 			var shutdownSerivce = serviceProvider.GetService<IShutdownNotificationService>();
 			var pollingService = serviceProvider.GetService<IPollingService>();
+            var timeoutService = serviceProvider.GetService<ITimeoutService>();
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-			// register deafult shutdown service         
-			if (shutdownSerivce == null)
+            // register deafult shutdown service         
+            if (shutdownSerivce == null)
 				Services.AddSingleton<IShutdownNotificationService>(new WorkerHostDummyShutdownNotificationService());
 
 			if (pollingService == null)
 				Services.AddSingleton<IPollingService>(new PollingService());
-				
-        	// should we not found one throw execption 			
-			if (startupService == null) { throw new Exception("Please defined the startup type via UseStartup method");  }
+
+            if (timeoutService == null)
+                Services.AddSingleton<ITimeoutService>(new TimeoutService(loggerFactory));
+
+            // should we not found one throw execption 			
+            if (startupService == null) { throw new Exception("Please defined the startup type via UseStartup method");  }
 
 			// Lookup the WorkerHost
 			var workerHost = serviceProvider.GetService<IWorkerHost>();
