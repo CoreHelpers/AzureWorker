@@ -1,7 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>6</LangVersion>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/CoreHelpers/AzureWorker</PackageProjectUrl>   
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/CoreHelpers/AzureWorker.git</RepositoryUrl>    
+    <Description>This project implements an efficient middleware based way to implement workers with a strong focus on Azure App Services.</Description>
+    <PackageTags>dotnet-core dotnet azure azure-storage azure-table-storage azure-app-service workers</PackageTags>    
+    <Copyright>(c) Dirk Eisenberg</Copyright>    
   </PropertyGroup>
 
   <ItemGroup>
