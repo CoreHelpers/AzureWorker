@@ -1,0 +1,30 @@
+name: CI Build
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build-core:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+      
+    - name: Setup .NET Core 6
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x        
+        
+    - name: Setup .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:        
+        dotnet-version: 3.1.x        
+        
+    - name: Restore
+      run: dotnet restore CoreHelpers.Azure.Worker.sln
+      env: 
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+
+    - name: Build
+      run: dotnet build --no-restore -c Release CoreHelpers.Azure.Worker.sln
+      env: 
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
