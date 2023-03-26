@@ -72,8 +72,18 @@ namespace CoreHelpers.Azure.Worker.AppServices
             return null;
         }
 
-        public static IWorkerApplicationBuilder UseStorageQueueProcessor(this IWorkerApplicationBuilder app, ILoggerFactory loggerFactory, IEnumerable<IAzureQueueClientPriorityConfiguration> queuesConfiguration, Func<WorkerApplicationOperation, String, IWorkerApplicationMiddlewareExecutionController, Task> queueMessageProcessor) 
-		{
+        public static IWorkerApplicationBuilder UseStorageQueueProcessor(this IWorkerApplicationBuilder app, ILoggerFactory loggerFactory, IEnumerable<IAzureQueueClientPriorityConfiguration> queuesConfiguration, Func<WorkerApplicationOperation, String, IWorkerApplicationMiddlewareExecutionController, Task> queueMessageProcessor)
+        {
+            return UseStorageQueueProcessorInternal(app, loggerFactory, queuesConfiguration, true, queueMessageProcessor);
+        }
+
+        public static IWorkerApplicationBuilder UseStorageQueueProcessorNotBlocking(this IWorkerApplicationBuilder app, ILoggerFactory loggerFactory, IEnumerable<IAzureQueueClientPriorityConfiguration> queuesConfiguration, Func<WorkerApplicationOperation, String, IWorkerApplicationMiddlewareExecutionController, Task> queueMessageProcessor)
+        {
+            return UseStorageQueueProcessorInternal(app, loggerFactory, queuesConfiguration, false, queueMessageProcessor);
+        }
+
+        private static IWorkerApplicationBuilder UseStorageQueueProcessorInternal(this IWorkerApplicationBuilder app, ILoggerFactory loggerFactory, IEnumerable<IAzureQueueClientPriorityConfiguration> queuesConfiguration, bool blockWhenQueueIsEmpty, Func<WorkerApplicationOperation, String, IWorkerApplicationMiddlewareExecutionController, Task> queueMessageProcessor)
+        {
             Task.Run(async () =>
             {
                 // generate a logger 
@@ -113,10 +123,14 @@ namespace CoreHelpers.Azure.Worker.AppServices
                         // log
                         logger.LogInformation("Processing message finished...");
                     }
-                    else
+                    else if (blockWhenQueueIsEmpty)
                     {
-                        // Let the next middleware finish our job						
-                        await next.Skip();
+                        // the polling will be skip and we land at the queue check again
+                        await next.Skip();                      
+                    } else
+                    {
+                        logger.LogInformation("All queues are empty, hand over processing to next middleware");
+                        await next.Invoke();
                     }
                 });
             }).Wait();
