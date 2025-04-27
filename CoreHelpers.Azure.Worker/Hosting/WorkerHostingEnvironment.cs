@@ -38,7 +38,9 @@ namespace CoreHelpers.Azure.Worker.Hosting
             var cGroupContent = File.ReadAllText("/proc/1/cgroup");
 
             // set the cache value
-            cachedCheckIsRunningInContainerEnvironment = cGroupContent.Contains("/docker/") || cGroupContent.Contains("/kubepods/");
+            cachedCheckIsRunningInContainerEnvironment = cGroupContent.Contains("/docker/") || cGroupContent.Contains("/kubepods/") || cGroupContent.Contains("kubepods.slice");
+            if (!cachedCheckIsRunningInContainerEnvironment.Value)
+	            cachedCheckIsRunningInContainerEnvironment = File.Exists("/var/run/secrets/kubernetes.io/serviceaccount/token");
 
             // return the value 
             return cachedCheckIsRunningInContainerEnvironment.Value;

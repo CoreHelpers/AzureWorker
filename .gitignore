@@ -40,3 +40,4 @@ Thumbs.db
 *.dotCover
 appsettings.demo.json
 .vs
+.idea/.idea.CoreHelpers.Azure.Worker/.idea
